@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload File</title>
+</head>
+<body>
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">Upload</button>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const chunkSize = 10 * 1024 * 1024; // 10 MB
+            const totalChunks = Math.ceil(file.size / chunkSize);
+
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
+
+                const formData = new FormData();
+                formData.append('chunk', chunk);
+                formData.append('chunkIndex', i);
+                formData.append('totalChunks', totalChunks);
+
+                fetch('/upload-chunk', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.text())
+                  .then(result => console.log(result))
+                  .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</body>
+</html>
